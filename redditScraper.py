@@ -67,6 +67,8 @@ def scrapeComments(url):
     return cleanComments
 
 def textCleaner(inputString):
+    '''returns list of one word strings without any extra spaces, line breaks, or special characters.'''
+
     #remove punctuation and conver to all lowercase
     noPunc = inputString.translate(str.maketrans('', '', string.punctuation)).lower()
     
@@ -115,6 +117,7 @@ def countAllPages(list):
         counter(list[i])
 
 def filterDict():
+    '''filters dictionary to only include desired keywords'''
     pass
 
 def exportCSV(dict):
@@ -131,13 +134,10 @@ def exportCSV(dict):
 def main():
     countAllPages(URLS)
     #filterDict(count)
-    #print(count)
     exportCSV(count)
 
 if __name__ == "__main__":
     main()
-
-    
 
 
 
