@@ -3,6 +3,10 @@ import string
 import re
 import csv
 from bs4 import BeautifulSoup
+from selenium import webdriver 
+from selenium.webdriver.common.by import By 
+from selenium.webdriver.chrome.service import Service as ChromeService 
+from webdriver_manager.chrome import ChromeDriverManager 
 
 
 #reads csv and creates list of links
@@ -13,7 +17,7 @@ for i in range(len(redditResults)):
     URLS.append(redditResults[i][0])
 
 def scrapePost(url):
-    '''outputs the title and post text from URL as a single string continuous string with only english characters and arabic numbers '''
+    '''outputs the title and post text from URL as a list of strings with only english characters and arabic numbers '''
 
     #Pulls page HTML
     page = requests.get(url)
@@ -28,8 +32,43 @@ def scrapePost(url):
     postText = postTextHTML.text.strip()
     allText = postTitle + " " +postText[:-22]#removes read more and combines title and text
 
+    return textCleaner(allText)
+    
+def scrapeComments(url):
+    '''outputs all comment text from URL as a list of strings with only english characters and arabic numbers'''
+    # instantiate options 
+    options = webdriver.ChromeOptions() 
+ 
+    # run browser in headless mode 
+    options.headless = True 
+ 
+    # instantiate driver 
+    driver = webdriver.Chrome(service=ChromeService( 
+	    ChromeDriverManager().install()), options=options) 
+ 
+    # get the entire website content 
+    driver.get(url)
+
+    # with open('readme.txt', 'w', encoding='utf-8') as f:
+        #f.write(driver.page_source)
+
+    # select elements by ID 
+    elements = driver.find_elements(By.ID, "-post-rtjson-content")
+    # create list of strings from list of elements
+    comments = []
+    for i in range(len(elements)):
+        comments = comments + [elements[i].text]
+
+    #process every string in list of strings, same process as cleaning 
+    cleanComments=[]
+    for i in range(len(comments)):
+        cleanComments = cleanComments + textCleaner(comments[i])
+    
+    return cleanComments
+
+def textCleaner(inputString):
     #remove punctuation and conver to all lowercase
-    noPunc = allText.translate(str.maketrans('', '', string.punctuation)).lower()
+    noPunc = inputString.translate(str.maketrans('', '', string.punctuation)).lower()
     
     #removes extra spaces and line breaks
     res = ""
@@ -52,26 +91,18 @@ def scrapePost(url):
             newWord=""
             for k in range(len(wordList[i])):
                 if wordList[i][k].isalnum():
-                    newWord=newWord + wordList[i][k]
+                    newWord = newWord + wordList[i][k]
             wordList[i] = newWord
-            
-    cleanPost=wordList
-    return cleanPost #list of words
-    
+    return wordList
 
-
-def scrapeComments():
-    print("i can't read script")
 
 def makeList(string):
     return list(string.split(" "))
 
-
-
 count = {} #{word,frequency}
 def counter(url):
     '''Stores frequency of every word in the main post and comments in dictionary count'''
-    allWords = scrapePost(url)# + scrapeComments(url)
+    allWords = scrapePost(url) + scrapeComments(url)
     for i in range(len(allWords)):
         if allWords[i] in count: #if this word has already been encountered add one to its dictionary value
             count[allWords[i]] = count[allWords[i]] + 1
@@ -100,15 +131,13 @@ def exportCSV(dict):
 def main():
     countAllPages(URLS)
     #filterDict(count)
-
-    print(count)
+    #print(count)
     exportCSV(count)
 
 if __name__ == "__main__":
     main()
 
     
-
 
 
 
