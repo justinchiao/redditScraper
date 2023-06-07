@@ -11,7 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time 
 import numpy as np
 
-def scrapeComments(url):
+def scrapeResults(url):
     '''outputs all comment text from URL as a list of strings with only english characters and arabic numbers'''
     # instantiate options 
     options = webdriver.ChromeOptions() 
@@ -35,59 +35,37 @@ def scrapeComments(url):
     # scroll to bottom of webpage 
     while itemTargetCount > len(items): 
         driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        time.sleep(5)
+        time.sleep(1)
         
         new_height = driver.execute_script('return document.body.scrollHeight') 
  
         if new_height == last_height: 
             break 
         
-        last_height == new_height 
+        last_height = new_height 
  
 	    # select elements by XPath
         elements = driver.find_elements(By.XPATH, "//div[@class='_2i5O0KNpb9tDq0bsNOZB_Q']/div/div/a/div/h3")
         h3_texts = [element.text for element in elements]
-        items = items + h3_texts
-
-    #THIS SHIT DON"T WORK!!!
-    #while itemTargetCount > len(items): 
-        #driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        #time.sleep(1)
-        
-        #new_height = driver.execute_script('return document.body.scrollHeight') 
- 
-        #if new_height == last_height: 
-            #break 
-        
-        #last_height == new_height 
- 
-	    # select elements by XPath
-        #elements = driver.find_elements(By.XPATH, "//div[@class='_2i5O0KNpb9tDq0bsNOZB_Q']/div/div")
-        #links = [driver.find_element(By.XPATH, "//div[@class='_2n04GrCyhhQf-Kshn7akmH _19FzInkloQSdrf0rh3Omen']/div[@class="_2i5O0KNpb9tDq0bsNOZB_Q"]/div/div/a").get_attribute('href')]
-        #links = elements.get_attribute("href")
-        #h3_texts = [element.text for element in links]
-        #items = items + links
+        items = h3_texts
 
     items = items[0:itemTargetCount]
-    urls=[]
+    urlsCSV=[]
+    urls = []
     for i in range(len(items)):
         element = driver.find_element(By.LINK_TEXT, items[i])
-        urls = urls + [[element.get_attribute('href')]]
-    exportCSV(urls)
+        urlsCSV = urlsCSV + [[element.get_attribute('href')]]
+        urls = urls + [element.get_attribute('href')]
+    exportResCSV(urlsCSV)
+    return urls
+
     
-def exportCSV(urls):
-    rows = urls
+def exportResCSV(inputurls):
+    rows = inputurls
     # using the savetxt 
     # from the numpy module
     np.savetxt("redditResults.csv", 
            rows,
            delimiter =", ", 
            fmt ='% s')
-
-    #fields = [''] 
-  
-    #with open('redditResults.csv', 'w') as f:
-        # using csv.writer method from CSV package
-        #write = csv.writer(f)
-        #write.writerows(rows)
     
