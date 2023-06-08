@@ -1,0 +1,4 @@
+selenium
+selenium webdriver-manager
+numpy
+beautifulsoup4
