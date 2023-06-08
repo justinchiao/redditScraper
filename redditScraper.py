@@ -93,7 +93,7 @@ def scrapeResults(urlList,itemTargetCount):
             if new_height == last_height: 
                 break 
         
-            ast_height = new_height 
+            last_height = new_height 
  
 	        # select elements by XPath
             elements = driver.find_elements(By.XPATH, "//div[@class='_2i5O0KNpb9tDq0bsNOZB_Q']/div/div/a/div/h3")
@@ -108,7 +108,7 @@ def scrapeResults(urlList,itemTargetCount):
             urls = urls + [element.get_attribute('href')]
 
     #removes duplicates
-    urlsCSV = list(set(urlsCSV))
+    #urlsCSV = list(set(urlsCSV))
     urls = list(set(urls))
 
     exportResCSV(urlsCSV)
