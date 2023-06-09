@@ -1,4 +1,9 @@
+requests
 selenium
 selenium webdriver-manager
 numpy
 beautifulsoup4
+numpy
+pillow
+matplotlib
+wordcloud

@@ -24,6 +24,8 @@ pip install matplotlib <br>
 pip install wordcloud <br>
 
 ## How to use:
+only files you need are redditScraper.py, request.csv, and noiseWords.csv. The others will be written by the program
+
 1. Edit request.csv to gather desired results. column 1 is the list of subreddits to crawl, column 2 is the words that will be searched in each subreddit 
 2. Number of search results can be set in main()
 3. Sort method can be set in generateURL() in variable named sort
