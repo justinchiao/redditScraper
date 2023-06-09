@@ -7,6 +7,10 @@ This program will take a list of subreddits and a list of words and search each 
 3. webdriver manager
 4. numpy
 5. BeautifulSoup
+6. pandas
+7. matplotlib
+8. pillow
+9. wordcloud
 
 copy these to install each package <br>
 pip install requests <br>
@@ -14,6 +18,10 @@ pip install selenium <br>
 pip install selenium webdriver-manager <br>
 pip install numpy <br>
 pip install beautifulsoup4 <br>
+pip install numpy <br>
+pip install pillow <br>
+pip install matplotlib <br>
+pip install wordcloud <br>
 
 ## How to use:
 1. Edit request.csv to gather desired results. column 1 is the list of subreddits to crawl, column 2 is the words that will be searched in each subreddit 
