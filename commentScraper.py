@@ -11,7 +11,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import time
 
-from selenium.webdriver.support.select import Select
 
 def textCleaner(inputString):
     '''returns list of one word strings without any extra spaces, line breaks, or special characters.'''
@@ -88,10 +87,6 @@ def scrapeComments(url,itemTargetCount):
     with open('comm.html', 'w', encoding='utf-8') as f:
         f.write(driver.page_source)
     driver.find_element(By.TAG_NAME,'button').click()
-
-
-
-    #driver.close()
     driver.switch_to.window(originalWindow)
     time.sleep(1)
     driver.refresh()
@@ -101,26 +96,26 @@ def scrapeComments(url,itemTargetCount):
     # instantiate height of webpage 
     last_height = driver.execute_script('return document.body.scrollHeight') 
     # set target count 
-    itemTargetCount = 30
+    itemTargetCount = 100
 
     while itemTargetCount > len(comments): 
         # scroll to bottom of webpage
 
         driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        time.sleep(1)
+        time.sleep(0.5)
         
         new_height = driver.execute_script('return document.body.scrollHeight') 
-        print('lastheight =', last_height)
-        print('newheight =', new_height)
+        #print('lastheight =', last_height)
+        #print('newheight =', new_height)
         
         if new_height == last_height: 
-            print('scroll fail')
+            #print('scroll fail')
             break 
         
         last_height = new_height
 
 	    # select elements by ID
-        elements = driver.find_elements(By.ID, "-post-rtjson-content")
+        elements = driver.find_elements(By.CLASS_NAME, "_1qeIAgB0cPwnLhDF9XSiJM")
         comments = [element.text for element in elements]
     
 

@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager 
 import numpy as np
 import time
+import random
 
 start_time = time.time()
 
@@ -110,8 +111,9 @@ def scrapeResults(urlList,itemTargetCount):
     #removes duplicates
     #urlsCSV = list(set(urlsCSV))
     urls = list(set(urls))
-
-    exportResCSV(urlsCSV)
+    print(len(urls))
+    print(urls)
+    #exportResCSV(urlsCSV)
     return urls
 
 def exportResCSV(inputurls):
@@ -157,62 +159,86 @@ def scrapePost(url):
 
     return textCleaner(allText)
 
-#start copy
 #broken rn
 def scrapeComments(url,itemTargetCount):
     '''outputs all comment text from URL as a list of strings with only english characters and arabic numbers'''
+    username = "SufficientDemand3270"
+    password = "HoRZrm00LT"
+    time.sleep(random.randint(5,10))
 
     # instantiate options 
     options = webdriver.ChromeOptions() 
     # run browser in headless mode 
-    options.headless = True 
+    options.headless = True
     # instantiate driver 
     driver = webdriver.Chrome(service=ChromeService( 
 	    ChromeDriverManager().install()), options=options) 
     # get the entire website content 
     driver.get(url)
-    #with open('readme.txt', 'w', encoding='utf-8') as f:
-        #f.write(driver.page_source)
+    with open('comm.html', 'w', encoding='utf-8') as f:
+        f.write(driver.page_source)
+
+    #login
+    originalWindow = driver.current_window_handle
+    driver.execute_script("window.open('');")
+    driver.switch_to.window(driver.window_handles[1])
+    driver.get('https://www.reddit.com/login/')
+
+    #driver.find_element(By.ID,'login-button').click()
+    #loginButton = driver.find_element(By.ID,'login-button')
+    #driver.execute_script("arguments[0].click();", loginButton)
+    time.sleep(2)
+    with open('comm.html', 'w', encoding='utf-8') as f:
+        f.write(driver.page_source)
+    driver.find_element(By.ID,'loginUsername').send_keys(username)
+    driver.find_element(By.ID,'loginPassword').send_keys(password)
+    #login = driver.find_element(By.CLASS_NAME,'AnimatedForm__submitButton m-full-width m-modalUpdate ')
+    with open('comm.html', 'w', encoding='utf-8') as f:
+        f.write(driver.page_source)
+    driver.find_element(By.TAG_NAME,'button').click()
+    driver.switch_to.window(originalWindow)
+    time.sleep(1)
+    driver.refresh()
 
     # create list of strings from list of elements
     comments = [] 
     # instantiate height of webpage 
     last_height = driver.execute_script('return document.body.scrollHeight') 
     # set target count 
-    itemTargetCount = 30
-    
+
     while itemTargetCount > len(comments): 
         # scroll to bottom of webpage
+
         driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        time.sleep(2)
+        time.sleep(0.5)
         
         new_height = driver.execute_script('return document.body.scrollHeight') 
-        print(new_height)
-        print(last_height)
+        #print('lastheight =', last_height)
+        #print('newheight =', new_height)
         
         if new_height == last_height: 
-            print('scroll fail')
-            break 
+            #print('scroll fail')
+            break
         
-        last_height = new_height 
- 
+        last_height = new_height
+
 	    # select elements by ID
-        elements = driver.find_elements(By.ID, "-post-rtjson-content")
+        elements = driver.find_elements(By.CLASS_NAME, "_1qeIAgB0cPwnLhDF9XSiJM")
         comments = [element.text for element in elements]
     
+
+
     #DONT TOUCH
     comments = comments[0:itemTargetCount]
     print(len(comments))
     print(comments)
-    #print(len(comments))
     #process every string in list of strings
     cleanComments=[]
     for i in range(len(comments)):
         cleanComments = cleanComments + textCleaner(comments[i])
     #print(cleanComments)
     driver.close()
-    #return cleanComments
-#end copy
+    return cleanComments
 
 #possible improvement to account for contractions
 #with open('contractions.csv', newline='') as c:
@@ -256,7 +282,7 @@ def makeList(string):
 count = {} #{word,frequency}
 def counter(url,coms):
     '''Stores frequency of every word in the main post and comments in dictionary count'''
-    allWords = scrapePost(url) #+ scrapeComments(url,coms)
+    allWords = scrapePost(url) + scrapeComments(url,coms)
     for i in range(len(allWords)):
         if allWords[i] in count: #if this word has already been encountered add one to its dictionary value
             count[allWords[i]] = count[allWords[i]] + 1
