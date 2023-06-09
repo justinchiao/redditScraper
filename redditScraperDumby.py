@@ -11,10 +11,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import time
 import random
-import copy
-from wordcloud import WordCloud, STOPWORDS
-import matplotlib.pyplot as plt
-import pandas as pd
 
 start_time = time.time()
 
@@ -115,8 +111,8 @@ def scrapeResults(urlList,itemTargetCount):
     #removes duplicates
     #urlsCSV = list(set(urlsCSV))
     urls = list(set(urls))
-    #print(len(urls))
-    #print(urls)
+    print(len(urls))
+    print(urls)
     #exportResCSV(urlsCSV)
     return urls
 
@@ -155,7 +151,7 @@ def scrapePost(url):
     elif postTextHTML == None:
         allText = postTitleHTML.text.strip()
     elif postTitleHTML == None and postTitleHTML == None:
-        allText = 'XxZzYy'
+        allText = 'postcontentwasnottext'
     else:
         postTitle = postTitleHTML.text.strip()
         postText = postTextHTML.text.strip()
@@ -164,85 +160,37 @@ def scrapePost(url):
     return textCleaner(allText)
 
 #broken rn
-def scrapeComments(url,itemTargetCount):
+def scrapeComments(url):
     '''outputs all comment text from URL as a list of strings with only english characters and arabic numbers'''
-    username = "SufficientDemand3270"
-    password = "HoRZrm00LT"
-    time.sleep(random.uniform(0,7.34))
 
     # instantiate options 
     options = webdriver.ChromeOptions() 
     # run browser in headless mode 
-    options.headless = True
-    # instantiate driver 
+    options.headless = True 
     driver = webdriver.Chrome(service=ChromeService( 
 	    ChromeDriverManager().install()), options=options) 
+
     # get the entire website content 
     driver.get(url)
-    with open('comm.html', 'w', encoding='utf-8') as f:
-        f.write(driver.page_source)
-
-    #login
-    originalWindow = driver.current_window_handle
-    driver.execute_script("window.open('');")
-    driver.switch_to.window(driver.window_handles[1])
-    driver.get('https://www.reddit.com/login/')
-
-    #driver.find_element(By.ID,'login-button').click()
-    #loginButton = driver.find_element(By.ID,'login-button')
-    #driver.execute_script("arguments[0].click();", loginButton)
-    time.sleep(2)
-    with open('comm.html', 'w', encoding='utf-8') as f:
-        f.write(driver.page_source)
-    driver.find_element(By.ID,'loginUsername').send_keys(username)
-    driver.find_element(By.ID,'loginPassword').send_keys(password)
-    #login = driver.find_element(By.CLASS_NAME,'AnimatedForm__submitButton m-full-width m-modalUpdate ')
-    with open('comm.html', 'w', encoding='utf-8') as f:
-        f.write(driver.page_source)
-    driver.find_element(By.TAG_NAME,'button').click()
-    driver.switch_to.window(originalWindow)
-    time.sleep(1)
-    driver.refresh()
-
-    # create list of strings from list of elements
-    comments = [] 
-    # instantiate height of webpage 
-    last_height = driver.execute_script('return document.body.scrollHeight') 
-    # set target count 
-
-    while itemTargetCount > len(comments): 
-        # scroll to bottom of webpage
-
-        driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        time.sleep(0.5)
-        
-        new_height = driver.execute_script('return document.body.scrollHeight') 
-        #print('lastheight =', last_height)
-        #print('newheight =', new_height)
-        
-        if new_height == last_height: 
-            #print('scroll fail')
-            break
-        
-        last_height = new_height
-
-	    # select elements by ID
-        elements = driver.find_elements(By.CLASS_NAME, "_1qeIAgB0cPwnLhDF9XSiJM")
-        comments = [element.text for element in elements]
+    #with open('readme.txt', 'w', encoding='utf-8') as f:
+        #f.write(driver.page_source)
     
+    comments = []
+ 
+    # scroll to bottom of webpage 
+    driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    time.sleep(2)
+ 
+	# select elements by id
+    elements = driver.find_elements(By.ID, "-post-rtjson-content")
+    comments = [element.text for element in elements]
+        
 
-
-    #DONT TOUCH
-    comments = comments[0:itemTargetCount]
-    print(len(comments))
-    print(comments)
-    print(url)
-    #process every string in list of strings
     cleanComments=[]
     for i in range(len(comments)):
         cleanComments = cleanComments + textCleaner(comments[i])
-    #print(cleanComments)
-    driver.close()
+
+    print(cleanComments)
     return cleanComments
 
 #possible improvement to account for contractions
@@ -285,74 +233,43 @@ def makeList(string):
     return list(string.split(" "))
 
 count = {} #{word,frequency}
-def counter(url,coms):
+def counter(url):
     '''Stores frequency of every word in the main post and comments in dictionary count'''
-    #comments = scrapeComments(url,coms)
-    #tries = 1
-    #maxTries = 5
-    #while comments == [] and tries <= maxTries:
-        #comments = scrapeComments(url,coms)
-        #tries = tries + 1
 
-    allWords = scrapePost(url)# + comments
+    comments = scrapeComments(url)
+    tries = 1
+    maxtries = 5
+    while comments == [] and tries <= maxtries:
+        comments = scrapeComments(url)
+        tries = tries + 1
+
+    allWords = scrapePost(url) + comments
+    
     for i in range(len(allWords)):
         if allWords[i] in count: #if this word has already been encountered add one to its dictionary value
             count[allWords[i]] = count[allWords[i]] + 1
         else: #if this is the first time this word has been encountered, create dictionary item with word as key and value equal to one
             count[allWords[i]] = 1
 
-def countAllPages(list,coms):
+def countAllPages(list):
     '''Iterates counter on all URLS in list'''
     for i in range(len(list)):
-        counter(list[i],coms)
+        counter(list[i])
 
-def filterDict(dict):
+def filterDict():
     '''filters dictionary to only include desired keywords'''
-    with open('noiseWords.csv', newline='') as f:
-        search = list(csv.reader(f))
-    noiseWords = []
-    for i in range(len(search)):
-        noiseWords.append(search[i][0])
+    pass
 
-    keys = list(dict.keys())
-    staticKeys = copy.deepcopy(keys)
-    for i in range(len(staticKeys)):
-        if  keys[i] in noiseWords:
-            del dict[staticKeys[i]]
-
-
-def exportCSV(dict, name):
+def exportCSV(dict):
     '''exports dict as CSV'''
 
-    with open(name, 'w', newline='', encoding = 'utf-8') as csvfile:
+    with open('wordFrequency.csv', 'w', newline='', encoding = 'utf-8') as csvfile:
         header_key = ['word', 'freq']
         new_val = csv.DictWriter(csvfile, fieldnames=header_key)
 
         new_val.writeheader()
         for new_k in dict:
             new_val.writerow({'word': new_k, 'freq': dict[new_k]})
-
-def wordCloud(dict):
-    '''creates wordcloud using dictioanry keys as words and dictionary value as frequency'''
-    text = ''
-    key = list(dict.keys())
-    for i in range(len(key)):
-        text = text + ((key[i] + ' ')* dict[key[i]])
-
-    word_cloud = WordCloud(
-        width=3000,
-        height=2000,
-        random_state=1,
-        background_color="black",
-        colormap="Pastel1",
-        collocations=False,
-        stopwords=STOPWORDS,
-        ).generate(text)
-    
-    # Display the generated Word Cloud
-    plt.imshow(word_cloud)
-    plt.axis("off")
-    plt.show()
 
 def main():
     #creates list of search urls
@@ -361,14 +278,10 @@ def main():
     #creates list with numResults posts per search url
     numResults = 10
     URLS = scrapeResults(searchURLS,numResults)
-    #creates list with numComments comments per post
-    numComments = 30
-
-    countAllPages(URLS,numComments)
-    exportCSV(count, "wordFrequency.csv")
-    filterDict(count)
-    exportCSV(count, "wordFrequencyWordCloud.csv")
-    wordCloud(count)
+    
+    countAllPages(URLS)
+    #filterDict(count)
+    exportCSV(count)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
