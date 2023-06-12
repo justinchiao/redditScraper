@@ -18,7 +18,6 @@ pip install selenium <br>
 pip install selenium webdriver-manager <br>
 pip install numpy <br>
 pip install beautifulsoup4 <br>
-pip install numpy <br>
 pip install pillow <br>
 pip install matplotlib <br>
 pip install wordcloud <br>
